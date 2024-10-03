@@ -1,0 +1,40 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.4'
+	id 'io.spring.dependency-management' version '1.1.6'
+	id 'org.graalvm.buildtools.native' version '0.10.3'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-integration'
+	implementation 'org.springframework.integration:spring-integration-amqp'
+	implementation 'org.springframework.integration:spring-integration-http'
+	implementation 'org.springframework.integration:spring-integration-jdbc'
+	runtimeOnly 'org.postgresql:postgresql'
+	testImplementation 'org.springframework.amqp:spring-rabbit-test'
+	testImplementation 'org.springframework.integration:spring-integration-test'
+
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
