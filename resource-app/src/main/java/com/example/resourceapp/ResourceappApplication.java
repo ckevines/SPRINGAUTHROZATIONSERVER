@@ -3,6 +3,7 @@ package com.example.resourceserver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -14,10 +15,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Map;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.data.repository.ListCrudRepository;
-
 
 @SpringBootApplication
 public class ResourceserverApplication {
@@ -52,18 +52,22 @@ public class ResourceserverApplication {
 // }
 
 @Repository
-interface CustomerRepository extends ListCrudRepository<Customer, Long> {
+interface CustomerRepository extends CrudRepository<Customer, Integer> {
 }
 
-record Customer(@Id Integer id, String name, String email) {
+class Customer {
+    @Id
+    private Integer id;
+    private String name;
+	private String email;
 }
+
 
 
 @RestController
 @ResponseBody
 class MeController {
 	@GetMapping("/me")
-	Map<String, String> priciple(Principal principal) {
-		return Map.of("name", principal.getName());
-	}
-}
+	Map<String, String> principle(Principal principal) {
+		return Collections.singletonMap("name", principal.getName());
+	}}
