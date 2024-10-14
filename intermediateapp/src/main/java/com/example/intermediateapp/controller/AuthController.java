@@ -33,27 +33,25 @@ public class AuthController {
         // In real applications, validate username and password from DB or another service
         if("user".equals(loginRequest.getUsername()) && "password".equals(loginRequest.getPassword())){
             String token = jwtUtil.generateToken(loginRequest.getUsername());
-            tokenProvider.setToken(token);
+            // In a real system, token should be returned to the client, not stored server-side
             return ResponseEntity.ok(new JwtResponse(token));
         }
         return ResponseEntity.status(401).body("Invalid credentials");
     }
 
     @GetMapping("/call-resource")
-    public ResponseEntity<?> callResource(HttpServletRequest request){
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null) {
-            ResourceResponse response = resourceClient.getProtectedResource();
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization header is missing");
+    public ResponseEntity<?> callResource(@RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")){
+            return ResponseEntity.status(401).body("Unauthorized");
         }
-//        // Ensure that the user is authenticated
-//        if(tokenProvider.getToken() == null){
-//            return ResponseEntity.status(401).body("Unauthorized");
-//        }
-//        ResourceResponse response = resourceClient.getProtectedResource();
-//        return ResponseEntity.ok(response);
+        String token = authorizationHeader.substring(7);
+        if(!jwtUtil.validateJwtToken(token)){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // Set token in TokenProvider to pass to Feign
+        tokenProvider.setToken(token);
+        ResourceResponse response = resourceClient.getProtectedResource();
+        return ResponseEntity.ok(response);
     }
 
     @Data

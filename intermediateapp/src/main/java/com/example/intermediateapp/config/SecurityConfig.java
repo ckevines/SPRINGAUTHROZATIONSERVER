@@ -18,9 +18,12 @@ public class SecurityConfig {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private TokenProvider tokenProvider;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil);
+        JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil, tokenProvider);
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
@@ -37,4 +40,5 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
 

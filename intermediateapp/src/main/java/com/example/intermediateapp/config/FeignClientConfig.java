@@ -22,19 +22,35 @@ import java.util.Arrays;
 @Configuration
 public class FeignClientConfig {
 
+    private final TokenProvider tokenProvider;
+
+    public FeignClientConfig(TokenProvider tokenProvider){
+        this.tokenProvider = tokenProvider;
+    }
+
+//    @Bean
+//    public RequestInterceptor requestInterceptor() {
+//        return new RequestInterceptor() {
+//            @Override
+//            public void apply(RequestTemplate template) {
+//                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+//                if (attributes != null) {
+//                    HttpServletRequest request = attributes.getRequest();
+//                    String authorization = request.getHeader("Authorization");
+//                    if (authorization != null) {
+//                        template.header("Authorization", authorization);
+//                    }
+//                }
+//            }
+//        };
+//    }
+
     @Bean
-    public RequestInterceptor requestInterceptor() {
-        return new RequestInterceptor() {
-            @Override
-            public void apply(RequestTemplate template) {
-                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-                if (attributes != null) {
-                    HttpServletRequest request = attributes.getRequest();
-                    String authorization = request.getHeader("Authorization");
-                    if (authorization != null) {
-                        template.header("Authorization", authorization);
-                    }
-                }
+    public RequestInterceptor jwtRequestInterceptor(){
+        return requestTemplate -> {
+            String token = tokenProvider.getToken();
+            if(token != null){
+                requestTemplate.header("Authorization", "Bearer " + token);
             }
         };
     }

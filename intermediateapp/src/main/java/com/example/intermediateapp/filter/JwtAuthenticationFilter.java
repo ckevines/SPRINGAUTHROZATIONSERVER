@@ -1,5 +1,8 @@
+// src/main/java/com/example/intermediateapp/filter/JwtAuthenticationFilter.java
+
 package com.example.intermediateapp.filter;
 
+import com.example.intermediateapp.config.TokenProvider;
 import com.example.intermediateapp.util.JwtUtil;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -16,9 +19,11 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenProvider tokenProvider;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil){
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, TokenProvider tokenProvider){
         this.jwtUtil = jwtUtil;
+        this.tokenProvider = tokenProvider;
     }
 
     @Override
@@ -36,9 +41,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            tokenProvider.setToken(token);
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            tokenProvider.clearToken();
+        }
     }
 
     private String parseJwt(HttpServletRequest request){
