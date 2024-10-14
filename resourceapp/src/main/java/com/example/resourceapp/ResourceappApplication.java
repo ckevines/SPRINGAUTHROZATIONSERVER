@@ -2,8 +2,10 @@ package com.example.resourceapp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
+@EnableFeignClients
 public class ResourceappApplication {
 
 	public static void main(String[] args) {

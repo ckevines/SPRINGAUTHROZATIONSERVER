@@ -1,9 +1,6 @@
-// src/main/java/com/example/resourceapp/security/JwtAuthenticationFilter.java
+package com.example.intermediateapp.filter;
 
-package com.example.resourceapp.security;
-
-
-import com.example.resourceapp.util.JwtUtil;
+import com.example.intermediateapp.util.JwtUtil;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

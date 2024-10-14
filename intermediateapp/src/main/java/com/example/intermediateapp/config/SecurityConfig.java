@@ -1,15 +1,16 @@
-package com.example.resourceapp.config;
+package com.example.intermediateapp.config;
 
-import com.example.resourceapp.security.JwtAuthenticationFilter;
-import com.example.resourceapp.util.JwtUtil;
+
+import com.example.intermediateapp.filter.JwtAuthenticationFilter;
+import com.example.intermediateapp.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 public class SecurityConfig {
@@ -19,7 +20,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Initialize your JWT filter
         JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil);
 
         http.csrf(csrf -> csrf.disable())
@@ -32,9 +32,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
 
-        // Add JWT filter before the username/password authentication filter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
+

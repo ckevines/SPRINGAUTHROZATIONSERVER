@@ -2,30 +2,38 @@
 
 package com.example.resourceapp.controller;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.resourceapp.util.JwtUtil;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-
+// Simple authentication controller for demonstration
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    @Autowired
+    private JwtUtil jwtUtil;
 
-    // Token validity in milliseconds (e.g., 1 hour)
-    private final long jwtExpirationMs = 3600000;
+    @PostMapping("/login")
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest){
+        // In real applications, validate username and password from DB
+        if("user".equals(loginRequest.getUsername()) && "password".equals(loginRequest.getPassword())){
+            String token = jwtUtil.generateToken(loginRequest.getUsername());
+            return ResponseEntity.ok(new JwtResponse(token));
+        }
+        return ResponseEntity.status(401).body("Invalid credentials");
+    }
 
-    @GetMapping("/generate-token")
-    public String generateToken() {
-        return Jwts.builder()
-                .setSubject("user123")
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS256, jwtSecret.getBytes())
-                .compact();
+    @Data
+    public static class LoginRequest {
+        private String username;
+        private String password;
+    }
+
+    @Data
+    public static class JwtResponse {
+        private final String token;
     }
 }

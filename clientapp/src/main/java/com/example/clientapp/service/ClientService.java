@@ -27,7 +27,7 @@ public class ClientService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private final String INTERMEDIATE_URL = "<http://localhost:8082>";
+    private final String INTERMEDIATE_URL = "http://localhost:8082";
 
     public String getToken(String username) {
         return restTemplate.getForObject(INTERMEDIATE_URL + "/generate-token?username=" + username, String.class);
