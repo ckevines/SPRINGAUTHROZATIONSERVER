@@ -18,11 +18,10 @@ package com.example.clientapp.controller;
 //        return clientService.fetchData();
 //    }
 //}
+import com.example.clientapp.model.UserDto;
 import com.example.clientapp.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class ClientController {
@@ -30,8 +29,8 @@ public class ClientController {
     @Autowired
     private ClientService clientService;
 
-    @GetMapping("/fetch-data")
-    public String fetchData(@RequestParam String username) {
-        return clientService.fetchProtectedData(username);
+    @PostMapping("/fetch-data")
+    public String fetchData(@RequestBody UserDto userDto) {
+        return clientService.fetchProtectedData(userDto);
     }
 }
