@@ -4,6 +4,7 @@ package com.example.intermediateapp.controller;
 
 import com.example.intermediateapp.config.TokenProvider;
 import com.example.intermediateapp.model.LoginRequest;
+import com.example.intermediateapp.model.User;
 import com.example.intermediateapp.model.UserDto;
 import com.example.intermediateapp.service.AuthenticationService;
 import com.example.intermediateapp.util.JwtUtil;
@@ -21,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 // Simplistic authentication controller
 @RestController
@@ -51,8 +53,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserDto userDto) {
-        return authenticationService.registerUser(userDto);
+    public ResponseEntity<?> register(@RequestBody User user) {
+        return authenticationService.registerUser(user);
     }
 
 //    @PostMapping("/login")
@@ -93,6 +95,34 @@ public class AuthController {
         ResourceResponse response = resourceClient.getProtectedResource();
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/authenticate-or-call")
+    public ResponseEntity<?> authenticateOrCall(
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+            @RequestBody(required = false) LoginRequest loginRequest) {
+
+        // 1. Authorization 헤더가 존재하고 Bearer 토큰인지 확인
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);  // Bearer 다음의 실제 토큰 값 추출
+            if (!jwtUtil.validateJwtToken(token)) {
+                return ResponseEntity.status(401).body("Unauthorized: Invalid Token");
+            }
+
+            // Feign Client에서 사용할 수 있도록 토큰 설정
+            tokenProvider.setToken(token);
+            ResourceResponse response = resourceClient.getProtectedResource();
+            return ResponseEntity.ok(response);
+        }
+
+        // 2. LoginRequest 바디가 존재하는지 확인 (로그인 요청 처리)
+        if (loginRequest != null) {
+            return authenticationService.authenticate(loginRequest);
+        }
+
+        // 3. Authorization 헤더와 LoginRequest 둘 다 없는 경우
+        return ResponseEntity.status(400).body("Bad Request: Missing Authorization Header or Login Request Body");
+    }
+
 
 //    @Data
 //    public static class LoginRequest {

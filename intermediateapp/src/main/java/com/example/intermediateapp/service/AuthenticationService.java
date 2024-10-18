@@ -6,7 +6,6 @@ import com.example.intermediateapp.model.User;
 import com.example.intermediateapp.model.UserDto;
 import com.example.intermediateapp.repository.UserRepository;
 import com.example.intermediateapp.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Arrays;
 
 @Service
@@ -50,20 +50,21 @@ public class AuthenticationService {
         return ResponseEntity.ok(new JwtResponse(token, authentication.getName()));
     }
 
-    public ResponseEntity<?> registerUser(UserDto userDto) {
-        // Check if user already exists
-        if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
+    @Transactional
+    public ResponseEntity<?> registerUser(User user) {
+        // Check if userSave already exists
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             return ResponseEntity.status(400).body("User already exists");
         }
 
-        // Create new user and hash the password
-        User user = new User();
-        user.setUsername(userDto.getUsername());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setRoles(Arrays.asList(userDto.getRole()));
+        // Create new userSave and hash the password
+        User userSave = new User();
+        userSave.setUsername(user.getUsername());
+        userSave.setPassword(passwordEncoder.encode(user.getPassword()));
+        userSave.setRoles(user.getRoles());
 
-        // Save user to the database
-        userRepository.save(user);
+        // Save userSave to the database
+        userRepository.save(userSave);
         return ResponseEntity.ok("User registered successfully");
     }
 }

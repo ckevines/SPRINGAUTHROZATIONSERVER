@@ -75,4 +75,5 @@ public class User implements UserDetails {
     public void setRoles(List<String> roles) {
         this.roles = roles;
     }
+
 }
