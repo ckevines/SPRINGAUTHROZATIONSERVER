@@ -5,24 +5,14 @@ package com.example.intermediateapp.controller;
 import com.example.intermediateapp.config.TokenProvider;
 import com.example.intermediateapp.model.LoginRequest;
 import com.example.intermediateapp.model.User;
-import com.example.intermediateapp.model.UserDto;
 import com.example.intermediateapp.service.AuthenticationService;
 import com.example.intermediateapp.util.JwtUtil;
 import com.example.intermediateapp.client.ResourceClient;
 import com.example.intermediateapp.dto.ResourceResponse;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 
 // Simplistic authentication controller
 @RestController

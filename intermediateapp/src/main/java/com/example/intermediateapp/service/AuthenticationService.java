@@ -3,7 +3,6 @@ package com.example.intermediateapp.service;
 import com.example.intermediateapp.model.JwtResponse;
 import com.example.intermediateapp.model.LoginRequest;
 import com.example.intermediateapp.model.User;
-import com.example.intermediateapp.model.UserDto;
 import com.example.intermediateapp.repository.UserRepository;
 import com.example.intermediateapp.util.JwtUtil;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Arrays;
 
 @Service
 public class AuthenticationService {

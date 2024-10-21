@@ -32,6 +32,9 @@ dependencies {
     // Spring Boot Starter for Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // MyBatis 의존성
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.0'
+
     // BCrypt for password encoding
     implementation 'org.springframework.security:spring-security-crypto'
     // JWT (Optional)
