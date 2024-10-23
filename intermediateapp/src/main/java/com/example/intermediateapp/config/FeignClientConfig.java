@@ -6,17 +6,13 @@ import com.example.intermediateapp.util.CustomResourceResponseDecoder;
 import com.example.intermediateapp.util.CustomTextDecoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.RequestInterceptor;
-import feign.RequestTemplate;
 import feign.codec.Decoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
 @Configuration
@@ -45,15 +41,15 @@ public class FeignClientConfig {
 //        };
 //    }
 
-    @Bean
-    public RequestInterceptor jwtRequestInterceptor(){
-        return requestTemplate -> {
-            String token = tokenProvider.getToken();
-            if(token != null){
-                requestTemplate.header("Authorization", "Bearer " + token);
-            }
-        };
-    }
+//    @Bean
+//    public RequestInterceptor jwtRequestInterceptor(){
+//        return requestTemplate -> {
+//            String token = tokenProvider.getToken();
+//            if(token != null){
+//                requestTemplate.header("Authorization", "Bearer " + token);
+//            }
+//        };
+//    }
 
     @Bean
     public StringHttpMessageConverter stringConverter() {

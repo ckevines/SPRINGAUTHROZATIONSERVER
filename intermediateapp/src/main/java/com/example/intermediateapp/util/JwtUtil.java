@@ -42,6 +42,14 @@ public class JwtUtil {
         }
         return false;
     }
+    public Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secret)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
 }
 
 //

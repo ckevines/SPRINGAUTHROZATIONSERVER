@@ -1,5 +1,6 @@
 package com.example.intermediateapp.service;
 
+import com.example.intermediateapp.config.TokenProvider;
 import com.example.intermediateapp.model.JwtResponse;
 import com.example.intermediateapp.model.LoginRequest;
 import com.example.intermediateapp.model.User;
@@ -22,13 +23,15 @@ public class AuthenticationService {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenProvider tokenProvider;
 
     public AuthenticationService(AuthenticationManager authenticationManager, JwtUtil jwtUtil,
-                                 UserRepository userRepository, PasswordEncoder passwordEncoder) {
+                                 UserRepository userRepository, PasswordEncoder passwordEncoder, TokenProvider tokenProvider) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenProvider = tokenProvider;
     }
 
     public ResponseEntity<?> authenticate(LoginRequest loginRequest) {
@@ -44,8 +47,13 @@ public class AuthenticationService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Generate JWT token
-        String token = jwtUtil.generateToken(authentication.getName());
-        return ResponseEntity.ok(new JwtResponse(token, authentication.getName()));
+//        String token = jwtUtil.generateToken(authentication.getName());
+        // Generate a new JWT token
+        String newJwt = jwtUtil.generateToken(loginRequest.getUsername());
+        // Store the new token for future use
+        tokenProvider.setTokenForUser(loginRequest.getUsername(), newJwt);
+
+        return ResponseEntity.ok(new JwtResponse(newJwt, authentication.getName()));
     }
 
     @Transactional
@@ -63,6 +71,7 @@ public class AuthenticationService {
 
         // Save userSave to the database
         userRepository.save(userSave);
+        tokenProvider.logCurrentState();
         return ResponseEntity.ok("User registered successfully");
     }
 }

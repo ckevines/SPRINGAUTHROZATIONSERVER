@@ -8,7 +8,9 @@
         <setting name="lazyLoadingEnabled" value="true"/>
         <setting name="aggressiveLazyLoading" value="false"/>
     </settings>
-    <mappers>
-        <mapper resource="mappers/UserMapper.xml"/>
-    </mappers>
+    <typeAliases>
+        <typeAlias type="com.codingrecipe.board.dto.BoardDTO" alias="board"></typeAlias>
+        <typeAlias type="com.codingrecipe.board.dto.BoardFileDTO" alias="boardFile"></typeAlias>
+    </typeAliases>
+
 </configuration>

@@ -8,6 +8,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -16,15 +18,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final TokenProvider tokenProvider;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, TokenProvider tokenProvider){
-        this.jwtUtil = jwtUtil;
-        this.tokenProvider = tokenProvider;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -33,22 +32,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = parseJwt(request);
         if (token != null && jwtUtil.validateJwtToken(token)) {
-            String username = jwtUtil.getUsernameFromToken(token);
+            if (!tokenProvider.isTokenBlacklisted(token)) {
+                // Token is valid and not blacklisted - proceed with authentication
+                String username = jwtUtil.getUsernameFromToken(token);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(username, null, null);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(username, null, null);
 
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            tokenProvider.setToken(token);
+//                tokenProvider.setToken(token);
+                tokenProvider.setTokenForUser(username, token);
+            } else {
+                // Token is blacklisted - reject the request
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         }
 
         try {
             filterChain.doFilter(request, response);
         } finally {
-            tokenProvider.clearToken();
+            if (token != null) {
+                tokenProvider.clearToken(token);
+            }
         }
     }
 

@@ -9,37 +9,51 @@ import com.example.intermediateapp.service.AuthenticationService;
 import com.example.intermediateapp.util.JwtUtil;
 import com.example.intermediateapp.client.ResourceClient;
 import com.example.intermediateapp.dto.ResourceResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 // Simplistic authentication controller
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private TokenProvider tokenProvider;
-
-    @Autowired
-    private ResourceClient resourceClient;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
+    private final JwtUtil jwtUtil;
+    private final TokenProvider tokenProvider;
+    private final ResourceClient resourceClient;
+    private final AuthenticationManager authenticationManager;
     private final AuthenticationService authenticationService;
 
-    public AuthController(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
-    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        return authenticationService.authenticate(loginRequest);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // Retrieve the previous token for this user
+            String oldToken = tokenProvider.getPreviousTokenForUser(loginRequest.getUsername());
+
+            // Invalidate the old token (if exists)
+            if (oldToken != null) {
+                tokenProvider.clearToken(oldToken);  // Add old token to blacklist
+            }
+
+
+//            tokenProvider.setToken(newJwt);
+//
+//            return ResponseEntity.ok(new LoginResponse(newJwt));
+            tokenProvider.logCurrentState();
+            return authenticationService.authenticate(loginRequest);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid credentials");
+        }
     }
 
     @PostMapping("/register")
@@ -80,8 +94,13 @@ public class AuthController {
         if(!jwtUtil.validateJwtToken(token)){
             return ResponseEntity.status(401).body("Unauthorized");
         }
+        if(tokenProvider.isTokenBlacklisted(token)){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        String username = jwtUtil.getUsernameFromToken(token);
+        tokenProvider.setTokenForUser(username, token);
         // Set token in TokenProvider to pass to Feign
-        tokenProvider.setToken(token);
+//        tokenProvider.setToken(token);
         ResourceResponse response = resourceClient.getProtectedResource();
         return ResponseEntity.ok(response);
     }
@@ -97,9 +116,13 @@ public class AuthController {
             if (!jwtUtil.validateJwtToken(token)) {
                 return ResponseEntity.status(401).body("Unauthorized: Invalid Token");
             }
-
+            if(tokenProvider.isTokenBlacklisted(token)){
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            String username = jwtUtil.getUsernameFromToken(token);
+            tokenProvider.setTokenForUser(username, token);
             // Feign Client에서 사용할 수 있도록 토큰 설정
-            tokenProvider.setToken(token);
+//            tokenProvider.setToken(token);
             ResourceResponse response = resourceClient.getProtectedResource();
             return ResponseEntity.ok(response);
         }
